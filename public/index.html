@@ -24,12 +24,24 @@
             }
             
             if (user != null){
-                var headPosition = user.joints[3].cameraY;
-                var footPosition = user.joints[19].cameraY;
-                var height = headPosition - footPosition;
+                var headPosition = user.joints[3];
+                var footPosition = user.joints[19];
+                var height = headPosition.cameraY - footPosition.cameraY;
 
                 document.getElementById("cameraY").innerHTML = "cameraY: " + height;
+                arctangent(clipPlane, headPosition, footPosition)
             }
+        }
+
+        function arctangent(clipPlane, head, foot){
+                var cameraAngleRadians= Math.atan(clipPlane.z / clipPlane.y); 
+                var cosCameraAngle = Math.cos(cameraAngleRadians);
+                var sinCameraAngle = Math.sin(cameraAngleRadians);
+
+                var footY = foot.cameraY * cosCameraAngle + foot.cameraZ * sinCameraAngle;
+                var headY = head.cameraY * cosCameraAngle + head.cameraZ * sinCameraAngle;
+                var height = headY - footY;
+                document.getElementById("arctangent").innerHTML = "Arctangent: " + height;
         }
 
 </script>
@@ -37,5 +49,6 @@
 <body>
     <h1 id="cameraY"></h1>
     <h1 id="clipPlaneW"></h1>
+    <h1 id="arctangent"></h1>
 </body>
 </html>
