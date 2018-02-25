@@ -6,30 +6,29 @@
 
         var socket = io.connect('http://localhost:8000/');
 
-
         socket.on('bodyFrame', interpretData);
 
         function interpretData(bodyFrame) {
             // Web Socket message:
-            console.log(bodyFrame);
+            console.log(bodyFrame);/**/
+            var user = null;
+            for (i = 0; i<6; i++){
+                if (bodyFrame.bodies[i].tracked == true){
+                    user = bodyFrame.bodies[i];
+                }
+                else {
+                    console.log(bodyFrame.bodies[i].tracked);
+                }
+            }
+            
+            if (user != null){
+                var headPosition = user.joints[3].cameraY;
+                var footPosition = user.joints[19].cameraY;
+                var height = headPosition - footPosition;
+                console.log(height);
+            }
         }
 
-        // Select the first body appearing in the data
-        var user = bodyFrame.bodies[0];
-
-        var rightHandPositon = user.joints[11].depthX;
-        var torsoPositon = user.joints[1].depthX;
-        var rightHandRelativePosition = rightHandPositon - torsoPositon;
-        var oldspeed = rightHandRelativePosition;
-        var rightHandRelativeSpeed = rightHandRelativePosition - oldspeed;
-
-        if(rightHandRelativeSpeed < -20) {
-            console.log("swiped left");
-        }
-
-        if(rightHandRelativeSpeed > 20) {
-            console.log("Swiped right");
-        }
 </script>
 </head>
 <body>
