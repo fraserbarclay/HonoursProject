@@ -15,7 +15,7 @@ if (kinect.open()) {
     console.log('Server listening on port 8000');
     console.log('Point your browser to http://localhost:8000');
 
-    // Serve index.html file?
+    // Serve index.html file
     app.get('/', function (req, res) {
         res.sendFile(__dirname + '/public/index.html');
     });

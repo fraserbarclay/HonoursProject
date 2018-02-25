@@ -9,8 +9,10 @@
         socket.on('bodyFrame', interpretData);
 
         function interpretData(bodyFrame) {
-            // Web Socket message:
-            console.log(bodyFrame);/**/
+            var clipPlane = bodyFrame.floorClipPlane;
+            var height2 = clipPlane.w
+            document.getElementById("clipPlaneW").innerHTML = "clipPlaneW: " + height2;
+
             var user = null;
             for (i = 0; i<6; i++){
                 if (bodyFrame.bodies[i].tracked == true){
@@ -25,12 +27,15 @@
                 var headPosition = user.joints[3].cameraY;
                 var footPosition = user.joints[19].cameraY;
                 var height = headPosition - footPosition;
-                console.log(height);
+
+                document.getElementById("cameraY").innerHTML = "cameraY: " + height;
             }
         }
 
 </script>
 </head>
 <body>
+    <h1 id="cameraY"></h1>
+    <h1 id="clipPlaneW"></h1>
 </body>
 </html>
