@@ -26,7 +26,9 @@
             if (user != null){
                 var headPosition = user.joints[3];
                 var footPosition = user.joints[19];
-                var height = headPosition.cameraY - footPosition.cameraY;
+                var height = Math.sqrt(Math.pow(headPosition.cameraX - footPosition.cameraX) +
+                                        Math.pow(headPosition.cameraY - footPosition.cameraY) +
+                                        Math.pow(headPosition.cameraZ - footPosition.cameraZ));
 
                 document.getElementById("cameraY").innerHTML = "cameraY: " + height;
                 arctangent(clipPlane, headPosition, footPosition)
