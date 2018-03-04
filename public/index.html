@@ -8,14 +8,7 @@
 
         socket.on('bodyFrame', interpretData);
 
-        //Compensate 0.1m for 'head' joint being in centre of head
-        var heightAdjust = 0.10;
-
         function interpretData(bodyFrame) {
-            var clipPlane = bodyFrame.floorClipPlane;
-            var height2 = clipPlane.w
-            document.getElementById("clipPlaneW").innerHTML = "clipPlaneW: " + height2;
-
             var user = null;
             for (i = 0; i < 6; i++) {
                 if (bodyFrame.bodies[i].tracked == true) {
@@ -42,12 +35,6 @@
                 var leftFoot = user.joints[15];
                 var rightFoot = user.joints[19];
 
-                var footX = (leftFoot.cameraX + rightFoot.cameraX) / 2;
-                var footY = (leftFoot.cameraY + rightFoot.cameraY) / 2;
-                var footZ = (leftFoot.cameraZ + rightFoot.cameraZ) / 2;
-
-                var height = (((calculateDistance(head, rightFoot)) + (calculateDistance(head, leftFoot)))/2).toFixed(2);
-
                 var topHeight = calculateDistance(head, neck) + calculateDistance(neck, shoulder) + 
                                 calculateDistance(shoulder, midBack) + calculateDistance(midBack, spineBase) +
                                 ((calculateDistance(spineBase, leftHip) + calculateDistance(spineBase, rightHip))/2);
@@ -56,8 +43,8 @@
                                 calculateDistance(rightKnee, rightAnkle) + calculateDistance(rightAnkle, rightFoot)))/2;
                 var totalHeight = (topHeight + legHeight).toFixed(2);
 
-                document.getElementById("basicHeight").innerHTML = "Basic Height: " + height + "m";
-                document.getElementById("advHeight").innerHTML = "Adv Height: " + totalHeight + "m";
+                document.getElementById("height").innerHTML = "Height: " + totalHeight + "m";
+                drawDotFigure(bodyFrame);
             }
         }
 
@@ -67,13 +54,38 @@
                         Math.pow(joint1.cameraZ - joint2.cameraZ, 2))
                         return distance;
         }
+
+
+        function drawDotFigure(bodyFrame){
+            var c = document.getElementById('canvas'); 
+            var ctx = c.getContext('2d');
+
+            ctx.clearRect(0, 0, c.width, c.height);
+
+            for(var i = 0;  i < bodyFrame.bodies.length; i++) {
+               if(bodyFrame.bodies[i].tracked == true){
+                   console.log('tracked');
+                   for (var j = 0; j < bodyFrame.bodies[i].joints.length; j++) {
+                        var joint = bodyFrame.bodies[i].joints[j];                            
+                        ctx.fillStyle = "#FF0000";
+                        ctx.beginPath();
+                        ctx.arc(joint.depthX*400, joint.depthY*400, 10, 0, Math.PI * 2, true); //multiplied with static integer 400 in order to adjust position on canvas as without it skeleton projection formed is only visible in a corner as DepthX values were always less than 1
+                        ctx.closePath();
+                        ctx.fill(); //drawing a circle for each joint on the canvas 
+                    }
+
+               }
+           }
+        }
     </script>
 </head>
 
 <body>
-    <h1 id="basicHeight" style="font-size: 72px"></h1>
-    <h1 id="advHeight" style="font-size: 72px"></h1>
-    <h1 id="clipPlaneW"></h1>
+    <h1 id="height" style="font-size: 72px"></h1>
+    <br>
+    <br>
+    <br>
+    <canvas id="canvas" width="640" height="480"></canvas>
 </body>
 
 </html>
