@@ -5,6 +5,7 @@
 List of all joints:
 
 | Joint | Number |
+| :---- |:-------|
 | Spine base | 0 |
 | Spine mid point | 1 |
 | Neck | 2 |
