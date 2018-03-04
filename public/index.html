@@ -1,15 +1,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <title></title>
     <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
     <script>
-
         var socket = io.connect('http://localhost:8000/');
 
         socket.on('bodyFrame', interpretData);
 
-        //Compensate for 'head' joint being in centre of head
-        var heightAdjust = 0.1;
+        //Compensate 0.1m for 'head' joint being in centre of head
+        var heightAdjust = 0.10;
 
         function interpretData(bodyFrame) {
             var clipPlane = bodyFrame.floorClipPlane;
@@ -17,51 +17,63 @@
             document.getElementById("clipPlaneW").innerHTML = "clipPlaneW: " + height2;
 
             var user = null;
-            for (i = 0; i<6; i++){
-                if (bodyFrame.bodies[i].tracked == true){
+            for (i = 0; i < 6; i++) {
+                if (bodyFrame.bodies[i].tracked == true) {
                     user = bodyFrame.bodies[i];
-                }
-                else {
-                    console.log(bodyFrame.bodies[i].tracked);
+                } else {
+                    //console.log(bodyFrame.bodies[i].tracked);
                 }
             }
-            
-            if (user != null){
-                var head = user.joints[3];
 
+            if (user != null) {
+                var head = user.joints[3];
+                var neck = user.joints[2];
+                var shoulder = user.joints[20];
+                var midBack = user.joints[1];
+                var spineBase = user.joints[0];
+                
+                var leftHip = user.joints[12];
+                var rightHip = user.joints[16]; 
+
+                var leftKnee = user.joints[13];
+                var rightKnee = user.joints[17]; 
+                var leftAnkle = user.joints[14];
+                var rightAnkle = user.joints[18]; 
                 var leftFoot = user.joints[15];
                 var rightFoot = user.joints[19];
 
-                var footX = (leftFoot.cameraX + rightFoot.cameraX)/2;
-                var footY = (leftFoot.cameraY + rightFoot.cameraY)/2;
-                var footZ = (leftFoot.cameraZ + rightFoot.cameraZ)/2;
+                var footX = (leftFoot.cameraX + rightFoot.cameraX) / 2;
+                var footY = (leftFoot.cameraY + rightFoot.cameraY) / 2;
+                var footZ = (leftFoot.cameraZ + rightFoot.cameraZ) / 2;
 
-                var height = (Math.sqrt(Math.pow(head.cameraX - footX, 2) +
-                                        Math.pow(head.cameraY - footY, 2) +
-                                        Math.pow(head.cameraZ - footZ, 2)) +
-                                        heightAdjust).toFixed(2);
+                var height = (((calculateDistance(head, rightFoot)) + (calculateDistance(head, leftFoot)))/2).toFixed(2);
 
-                document.getElementById("height").innerHTML = "Height: " + height;
-                arctangent(clipPlane, head, rightFoot)
+                var topHeight = calculateDistance(head, neck) + calculateDistance(neck, shoulder) + 
+                                calculateDistance(shoulder, midBack) + calculateDistance(midBack, spineBase) +
+                                ((calculateDistance(spineBase, leftHip) + calculateDistance(spineBase, rightHip))/2);
+                var legHeight = ((calculateDistance(leftHip, leftKnee) + calculateDistance(leftKnee, leftAnkle) +
+                                calculateDistance(leftAnkle, leftFoot)) + (calculateDistance(rightHip, rightKnee) + 
+                                calculateDistance(rightKnee, rightAnkle) + calculateDistance(rightAnkle, rightFoot)))/2;
+                var totalHeight = (topHeight + legHeight).toFixed(2);
+
+                document.getElementById("basicHeight").innerHTML = "Basic Height: " + height + "m";
+                document.getElementById("advHeight").innerHTML = "Adv Height: " + totalHeight + "m";
             }
         }
 
-        function arctangent(clipPlane, head, foot){
-                var cameraAngleRadians= Math.atan(clipPlane.z / clipPlane.y); 
-                var cosCameraAngle = Math.cos(cameraAngleRadians);
-                var sinCameraAngle = Math.sin(cameraAngleRadians);
-
-                var footY = foot.cameraY * cosCameraAngle + foot.cameraZ * sinCameraAngle;
-                var headY = head.cameraY * cosCameraAngle + head.cameraZ * sinCameraAngle;
-                var height = headY - footY;
-                document.getElementById("arctangent").innerHTML = "Arctangent: " + height;
+        function calculateDistance(joint1, joint2) {
+            var distance = Math.sqrt(Math.pow(joint1.cameraX - joint2.cameraX, 2) +
+                        Math.pow(joint1.cameraY - joint2.cameraY, 2) +
+                        Math.pow(joint1.cameraZ - joint2.cameraZ, 2))
+                        return distance;
         }
-
-</script>
+    </script>
 </head>
+
 <body>
-    <h1 id="height" style="font-size: 72px"></h1>
+    <h1 id="basicHeight" style="font-size: 72px"></h1>
+    <h1 id="advHeight" style="font-size: 72px"></h1>
     <h1 id="clipPlaneW"></h1>
-    <h1 id="arctangent"></h1>
 </body>
+
 </html>
