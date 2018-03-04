@@ -8,6 +8,9 @@
 
         socket.on('bodyFrame', interpretData);
 
+        //Compensate for 'head' joint being in centre of head
+        var heightAdjust = 0.1;
+
         function interpretData(bodyFrame) {
             var clipPlane = bodyFrame.floorClipPlane;
             var height2 = clipPlane.w
@@ -24,14 +27,22 @@
             }
             
             if (user != null){
-                var headPosition = user.joints[3];
-                var footPosition = user.joints[19];
-                var height = Math.sqrt(Math.pow(headPosition.cameraX - footPosition.cameraX) +
-                                        Math.pow(headPosition.cameraY - footPosition.cameraY) +
-                                        Math.pow(headPosition.cameraZ - footPosition.cameraZ));
+                var head = user.joints[3];
 
-                document.getElementById("cameraY").innerHTML = "cameraY: " + height;
-                arctangent(clipPlane, headPosition, footPosition)
+                var leftFoot = user.joints[15];
+                var rightFoot = user.joints[19];
+
+                var footX = (leftFoot.cameraX + rightFoot.cameraX)/2;
+                var footY = (leftFoot.cameraY + rightFoot.cameraY)/2;
+                var footZ = (leftFoot.cameraZ + rightFoot.cameraZ)/2;
+
+                var height = (Math.sqrt(Math.pow(head.cameraX - footX, 2) +
+                                        Math.pow(head.cameraY - footY, 2) +
+                                        Math.pow(head.cameraZ - footZ, 2)) +
+                                        heightAdjust).toFixed(2);
+
+                document.getElementById("height").innerHTML = "Height: " + height;
+                arctangent(clipPlane, head, rightFoot)
             }
         }
 
@@ -49,7 +60,7 @@
 </script>
 </head>
 <body>
-    <h1 id="cameraY"></h1>
+    <h1 id="height" style="font-size: 72px"></h1>
     <h1 id="clipPlaneW"></h1>
     <h1 id="arctangent"></h1>
 </body>
