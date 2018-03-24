@@ -8,6 +8,15 @@
 
         socket.on('bodyFrame', interpretData);
 
+        socket.on('depthFrame', logData);
+
+        var depthWidth = 512;
+        var depthHeight = 424;
+
+        function logData(depthFrame){
+            console.log(depthFrame);
+        }
+
         function interpretData(bodyFrame) {
             var user = null;
             for (i = 0; i < 6; i++) {
@@ -35,6 +44,11 @@
                 var leftFoot = user.joints[15];
                 var rightFoot = user.joints[19];
 
+                var leftShoulder = user.joints[4];
+                var rightShoulder = user.joints[8];
+
+                var width = calculateDistance(leftShoulder, rightShoulder);
+
                 var topHeight = calculateDistance(head, neck) + calculateDistance(neck, shoulder) + 
                                 calculateDistance(shoulder, midBack) + calculateDistance(midBack, spineBase) +
                                 ((calculateDistance(spineBase, leftHip) + calculateDistance(spineBase, rightHip))/2);
@@ -44,6 +58,7 @@
                 var totalHeight = (topHeight + legHeight).toFixed(2);
 
                 document.getElementById("height").innerHTML = "Height: " + totalHeight + "m";
+                document.getElementById("width").innerHTML = "Width: " + width + "m";
                 drawDotFigure(bodyFrame);
             }
         }
@@ -63,7 +78,6 @@
 
             for(var i = 0;  i < bodyFrame.bodies.length; i++) {
                if(bodyFrame.bodies[i].tracked == true){
-                   console.log('tracked');
                    for (var j = 0; j < bodyFrame.bodies[i].joints.length; j++) {
                         var joint = bodyFrame.bodies[i].joints[j];                            
                         ctx.fillStyle = "#FF0000";
@@ -81,7 +95,9 @@
 <body>
     <h1 id="height" style="font-size: 72px"></h1>
     <br>
+    <h1 id="width" style="font-size: 72px"></h1>
     <br>
+    <h1 id="depth" style="font-size: 72px"></h1>~
     <br>
     <canvas id="canvas" width="640" height="480"></canvas>
 </body>

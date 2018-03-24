@@ -25,7 +25,13 @@ if (kinect.open()) {
         io.sockets.emit('bodyFrame', bodyFrame);
     });
 
+    kinect.on('depthFrame', function (depthFrame) {
+        io.sockets.emit('depthFrame', depthFrame);
+    });
+
     // Call bodyReader
     kinect.openBodyReader();
+    kinect.openDepthReader();
+
 }
 

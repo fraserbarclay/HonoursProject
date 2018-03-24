@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js PointCloud Test</title>
+    <style>
+        input {
+            margin: 0px;
+        }
+    </style>
+    <script src="../three.min.js"></script>
+    <script>
+        var camera, scene, renderer;
+        var geometry, material, points;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(500, 500);
+            renderer.setClearColor(0x333333);
+            document.body.appendChild(renderer.domElement);
+
+            points = new Array(1000);
+            var i = 0;
+            var yaxis = new THREE.Vector3(0, 1, 0);
+            while (i < 1000) {
+                var x = 2 * Math.random() - 1;
+                var y = 2 * Math.random() - 1;
+                var z = 2 * Math.random() - 1;
+                if (x * x + y * y + z * z < 1) { // only use points inside the unit sphere
+                    points[i] = new THREE.Vector3(x, y, z);
+                    i++;
+                }
+            }
+
+            geometry = new THREE.Geometry();
+            for (i = 0; i < 1000; i++) {
+                geometry.vertices.push(points[i]);
+            }
+            material = new THREE.PointsMaterial({
+                color: "yellow",
+                size: 2,
+                sizeAttenuation: false
+            });
+
+            pointCloud = new THREE.Points(geometry, material);
+            scene.add(pointCloud);
+
+            camera.position.z = 5;
+            animate();
+        };
+
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            pointCloud.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
+        };
+    </script>
+</head>
+
+<body onload="init()">
+
+</body>
+
+</html>
