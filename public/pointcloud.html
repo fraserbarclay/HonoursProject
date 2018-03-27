@@ -25,7 +25,6 @@
 
             points = new Array(1000);
             var i = 0;
-            var yaxis = new THREE.Vector3(0, 1, 0);
             while (i < 1000) {
                 var x = 2 * Math.random() - 1;
                 var y = 2 * Math.random() - 1;
@@ -37,7 +36,7 @@
             }
 
             geometry = new THREE.Geometry();
-            for (i = 0; i < 1000; i++) {
+            for (i = 0; i < points.length; i++) {
                 geometry.vertices.push(points[i]);
             }
             material = new THREE.PointsMaterial({
