@@ -1,18 +1,22 @@
-import org.openkinect.processing.*; //<>//
+import KinectPV2.*;
 
-// Kinect Library object
-Kinect2 kinect2;
+KinectPV2 kinect;
 
 // Angle for rotation
 float a = 0;
 
 void setup() {
-  size(800, 600, P3D);
-  kinect2 = new Kinect2(this);
-  kinect2.initDevice();
-  kinect2.initDepth();
-}
+  size(1536, 1272, P3D);
 
+  kinect = new KinectPV2(this);
+
+  //Enable point cloud
+  kinect.enableDepthImg(true);
+  kinect.enablePointCloud(true);
+
+  kinect.init();
+
+}
 
 void draw() {
   background(0);
@@ -20,21 +24,18 @@ void draw() {
   // Translate and rotate
   pushMatrix();
   translate(width/2, height/2, -2250);
-  rotateY(a);
+  //rotateY(a);
 
-  // We're just going to calculate and draw every 2nd pixel
-  int skip = 4;
-
-  // Get the raw depth as array of integers
-  int[] depth = kinect2.getRawDepth();
-
+  //obtain the raw depth data in integers from [0 - 4500]
+  int [] rawData = kinect.getRawDepthData();
+  
   stroke(255);
   strokeWeight(2);
   beginShape(POINTS);
-  for (int x = 0; x < kinect2.depthWidth; x+=skip) {
-    for (int y = 0; y < kinect2.depthHeight; y+=skip) {
-      int offset = x + y * kinect2.depthWidth;
-      int d = depth[offset];
+  for (int x = 0; x < 512; x++) {
+    for (int y = 0; y < 424; y++) {
+      int offset = x + y * 512;
+      int d = rawData[offset];
       //calculte the x, y, z camera position based on the depth information
       PVector point = depthToPointCloudPos(x, y, d);
 
@@ -50,10 +51,9 @@ void draw() {
   text(frameRate, 50, 50);
 
   // Rotate
-  a += 0.0015;
+  a += 0.15;
+
 }
-
-
 
 //calculte the xyz camera position based on the depth data
 PVector depthToPointCloudPos(int x, int y, float depthValue) {
