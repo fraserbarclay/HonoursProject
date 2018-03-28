@@ -20,17 +20,11 @@ if (kinect.open()) {
         res.sendFile(__dirname + '/public/index.html');
     });
 
-    // Listen for bodyFrame
-   /* kinect.on('bodyFrame', function (bodyFrame) {
-        io.sockets.emit('bodyFrame', bodyFrame);
-    }); */
-
     kinect.on('rawDepthFrame', function (rawDepthFrame) {
         io.sockets.emit('rawDepthFrame', rawDepthFrame);
     });
 
-    // Call bodyReader
-   // kinect.openBodyReader();
+    // Call rawDepthReader
     kinect.openRawDepthReader();
 
 }
