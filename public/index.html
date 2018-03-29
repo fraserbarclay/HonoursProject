@@ -21,18 +21,17 @@
 
         function init() {
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(50, 1, 1, 10000);
 
             renderer = new THREE.WebGLRenderer();
-            renderer.setSize(500, 500);
+            renderer.setSize(1024, 848);
             renderer.setClearColor(0x333333);
             document.body.appendChild(renderer.domElement);
 
             geometry = new THREE.Geometry();
             material = new THREE.PointsMaterial({
-                color: "yellow",
-                size: 1,
-                sizeAttenuation: false
+                color: "white"
+                //,size: 1
             });
 
             pointCloud = new THREE.Points(geometry, material);
@@ -50,13 +49,18 @@
             var count = 0;
             for (var i = 0; i < depthWidth; i++) {
                 for (var j = 0; j < depthHeight; j++) {
-                    var offset = i * j * 512;
-                    var d = dataArray[count];
+                    var offset = i + j * 512;
+                    var d = dataArray[offset];
+                    //var d = (dataArray[count+1] << 16) + dataArray[count];
                     //console.log(i + ", " + j + ", " + d)
                     point = new THREE.Vector3(i, j, d);
                     point = depthToPointCloudPos(point);
                     //console.log(point.x + ", " + point.y + ", " + point.z)
-                    geometry.vertices.push(point);
+                    if (count < geometry.vertices.length){
+                        geometry.vertices[count] = point;
+                    } else {
+                        geometry.vertices.push(point);
+                    }
                     count++;
                 }
             }
@@ -80,33 +84,28 @@
 
             scene.add(pointCloud);
 
-            camera.position.z = 5;
+            camera.position.x = -300;
+            camera.position.y = 300;
+            camera.position.z = 2500; 
+            //camera.r
 
             animate();
-
-            //var offset = i + j * depthWidth;
-            //var d = depth[offset];
-
-            //calculte the x, y, z camera position based on the depth information
-            //  PVector point = depthToPointCloudPos(x, y, d);
-
-            // Draw a point
-            //   vertex(point.x, point.y, point.z);
-
-
         }
 
         function animate() {
-            requestAnimationFrame(animate);
+            //requestAnimationFrame(animate);
+            //pointCloud.rotation.y = 3.4;
+            //pointCloud.rotation.x = 3;
+                        //pointCloud.rotation.x += 0.1;
 
-            pointCloud.rotation.y += 0.01;
+            //pointCloud.rotation.y += 0.01;
+            //console.log(pointCloud.rotation.x);
             geometry.verticesNeedUpdate = true;
             renderer.render(scene, camera);
         }
 
         //calculte the xyz camera position based on the depth data
         function depthToPointCloudPos(point) {
-            //var  point = new THREE.Vector3();
             point.z = (point.z);
             point.x = (point.x - 254.878) * point.z / 365.456;
             point.y = (point.y - 205.395) * point.z / 365.456;
