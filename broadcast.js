@@ -21,16 +21,16 @@ if (kinect.open()) {
     });
 
     // Listen for bodyFrame
-   /* kinect.on('bodyFrame', function (bodyFrame) {
+    kinect.on('bodyFrame', function (bodyFrame) {
         io.sockets.emit('bodyFrame', bodyFrame);
-    }); */
+    });
 
     kinect.on('rawDepthFrame', function (rawDepthFrame) {
         io.sockets.emit('rawDepthFrame', rawDepthFrame);
     });
 
     // Call bodyReader
-   // kinect.openBodyReader();
+    kinect.openBodyReader();
     kinect.openRawDepthReader();
 
 }

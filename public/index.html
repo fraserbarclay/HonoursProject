@@ -9,7 +9,7 @@
     <script>
         var socket = io.connect('http://localhost:8000/');
 
-        //socket.on('bodyFrame', interpretData);
+        socket.on('bodyFrame', interpretData);
 
         socket.on('rawDepthFrame', logData);
 
@@ -21,16 +21,17 @@
 
         function init() {
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(50, 1, 1, 10000);
+            camera = new THREE.PerspectiveCamera(60, 1, 1, 4500);
+            camera.position.set(00, 00, 5000)
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(1024, 848);
-            renderer.setClearColor(0x333333);
+            renderer.setClearColor(0xFFFFFF);
             document.body.appendChild(renderer.domElement);
 
             geometry = new THREE.Geometry();
             material = new THREE.PointsMaterial({
-                color: "white"
+                color: "grey"
                 //,size: 1
             });
 
@@ -39,80 +40,43 @@
         }
 
         function logData(rawDepthFrame) {
-            //points = new Array(217088);
 
             var data = rawDepthFrame;
-            //console.log(data);
             var dataArray = new Int16Array(rawDepthFrame);
-            //console.log(dataArray);
 
             var count = 0;
             for (var i = 0; i < depthWidth; i++) {
                 for (var j = 0; j < depthHeight; j++) {
                     var offset = i + j * 512;
                     var d = dataArray[offset];
-                    //var d = (dataArray[count+1] << 16) + dataArray[count];
-                    //console.log(i + ", " + j + ", " + d)
-                    point = new THREE.Vector3(i, j, d);
-                    point = depthToPointCloudPos(point);
-                    //console.log(point.x + ", " + point.y + ", " + point.z)
-                    if (count < geometry.vertices.length){
-                        geometry.vertices[count] = point;
-                    } else {
-                        geometry.vertices.push(point);
-                    }
+                    var point = depthToPointCloudPos(new THREE.Vector3(i, j, d));
+                    geometry.vertices[count] = point;
+                    geometry.verticesNeedUpdate = true;
                     count++;
                 }
             }
 
-            /*
-            // Simple sphere
-            var i = 0;
-            while (i < 1000) {
-                var x = 2 * Math.random() - 1;
-                var y = 2 * Math.random() - 1;
-                var z = 2 * Math.random() - 1;
-                if (x * x + y * y + z * z < 1) { // only use points inside the unit sphere
-                    points[i] = new THREE.Vector3(x, y, z);
-                    i++;
-                }
-            }*/
-
-            /*for (i = 0; i < points.length; i++) {
-                geometry.vertices.push(points[i]);
-            }*/
-
             scene.add(pointCloud);
+            renderer.render(scene, camera);
 
-            camera.position.x = -300;
-            camera.position.y = 300;
-            camera.position.z = 2500; 
-            //camera.r
-
-            animate();
+            //animate();
         }
 
         function animate() {
             //requestAnimationFrame(animate);
             //pointCloud.rotation.y = 3.4;
             //pointCloud.rotation.x = 3;
-                        //pointCloud.rotation.x += 0.1;
-
-            //pointCloud.rotation.y += 0.01;
-            //console.log(pointCloud.rotation.x);
-            geometry.verticesNeedUpdate = true;
-            renderer.render(scene, camera);
         }
 
         //calculte the xyz camera position based on the depth data
         function depthToPointCloudPos(point) {
             point.z = (point.z);
             point.x = (point.x - 254.878) * point.z / 365.456;
-            point.y = (point.y - 205.395) * point.z / 365.456;
+            point.y = 424 - (point.y - 205.395) * point.z / 365.456;
             return point;
         }
 
-        /*function interpretData(bodyFrame) {
+        function interpretData(bodyFrame) {
             var user = null;
             for (i = 0; i < 6; i++) {
                 if (bodyFrame.bodies[i].tracked == true) {
@@ -177,13 +141,13 @@
                         var joint = bodyFrame.bodies[i].joints[j];
                         ctx.fillStyle = "#FF0000";
                         ctx.beginPath();
-                        ctx.arc(joint.depthX * 400, joint.depthY * 400, 10, 0, Math.PI * 2, true); //multiplied with static integer 400 in order to adjust position on canvas as without it skeleton projection formed is only visible in a corner as DepthX values were always less than 1
+                        ctx.arc(joint.depthX * 512, joint.depthY * 424, 5, 0, Math.PI * 2, true); //multiplied with static integer 400 in order to adjust position on canvas as without it skeleton projection formed is only visible in a corner as DepthX values were always less than 1
                         ctx.closePath();
                         ctx.fill(); //drawing a circle for each joint on the canvas 
                     }
                 }
             }
-        } */
+        }
     </script>
 </head>
 
@@ -194,7 +158,10 @@
     <br>
     <h1 id="depth" style="font-size: 72px"></h1>
     <br>
-    <canvas id="canvas" width="640" height="480"></canvas>
+    <canvas id="canvas" width="512" height="424"></canvas>
+    <br>
+    <br>
+    <!-- <a class="btn btn-primary" href="#" role="button">Gimmie</a> -->
 </body>
 
 </html>
