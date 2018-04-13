@@ -4,142 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Body Dimension Analysis</title>
-    <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script> -->
     <script>
         var socket = io.connect('http://localhost:8000/');
+        socket.on('currentFrame', drawDotFigure);
+        socket.on('output', output)
 
-        socket.on('bodyFrame', interpretData);
-
-        socket.on('rawDepthFrame', logData);
-
-        var depthWidth = 512;
-        var depthHeight = 424;
-
-        var camera, scene, renderer;
-        var geometry, material, points;
-
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, 1, 1, 4500);
-            camera.position.set(00, 00, 5000)
-
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(1024, 848);
-            renderer.setClearColor(0xFFFFFF);
-            document.body.appendChild(renderer.domElement);
-
-            geometry = new THREE.Geometry();
-            material = new THREE.PointsMaterial({
-                color: "grey"
-                //,size: 1
-            });
-
-            pointCloud = new THREE.Points(geometry, material);
-
+        function openReader() {
+            var message = {
+                user: "nodesource",
+                text: "Hello, world!"
+            };
+            socket.emit("open");
         }
 
-        function logData(rawDepthFrame) {
-
-            var data = rawDepthFrame;
-            var dataArray = new Int16Array(rawDepthFrame);
-
-            var count = 0;
-            for (var i = 0; i < depthWidth; i++) {
-                for (var j = 0; j < depthHeight; j++) {
-                    var offset = i + j * 512;
-                    var d = dataArray[offset];
-                    var point = depthToPointCloudPos(new THREE.Vector3(i, j, d));
-                    geometry.vertices[count] = point;
-                    geometry.verticesNeedUpdate = true;
-                    count++;
-                }
-            }
-
-            scene.add(pointCloud);
-            renderer.render(scene, camera);
-
-            //animate();
+        function closeReader() {
+            socket.emit("close");
         }
 
-        function animate() {
-            //requestAnimationFrame(animate);
-            //pointCloud.rotation.y = 3.4;
-            //pointCloud.rotation.x = 3;
+        function capture(){
+            socket.emit("capture");
         }
 
-        //calculte the xyz camera position based on the depth data
-        function depthToPointCloudPos(point) {
-            point.z = (point.z);
-            point.x = (point.x - 254.878) * point.z / 365.456;
-            point.y = 424 - (point.y - 205.395) * point.z / 365.456;
-            return point;
+        function output(output){
+            document.getElementById("height").innerHTML = "Height: " + output.height + "m";
+            document.getElementById("width").innerHTML = "Width: " + output.width + "m";
         }
 
-        function interpretData(bodyFrame) {
-            var user = null;
-            for (i = 0; i < 6; i++) {
-                if (bodyFrame.bodies[i].tracked == true) {
-                    user = bodyFrame.bodies[i];
-                } else {
-                    //console.log(bodyFrame.bodies[i].tracked);
-                }
-            }
-
-            if (user != null) {
-                var head = user.joints[3];
-                var neck = user.joints[2];
-                var shoulder = user.joints[20];
-                var midBack = user.joints[1];
-                var spineBase = user.joints[0];
-
-                var leftHip = user.joints[12];
-                var rightHip = user.joints[16];
-
-                var leftKnee = user.joints[13];
-                var rightKnee = user.joints[17];
-                var leftAnkle = user.joints[14];
-                var rightAnkle = user.joints[18];
-                var leftFoot = user.joints[15];
-                var rightFoot = user.joints[19];
-
-                var leftShoulder = user.joints[4];
-                var rightShoulder = user.joints[8];
-
-                var width = calculateDistance(leftShoulder, rightShoulder);
-
-                var topHeight = calculateDistance(head, neck) + calculateDistance(neck, shoulder) +
-                    calculateDistance(shoulder, midBack) + calculateDistance(midBack, spineBase) +
-                    ((calculateDistance(spineBase, leftHip) + calculateDistance(spineBase, rightHip)) / 2);
-                var legHeight = ((calculateDistance(leftHip, leftKnee) + calculateDistance(leftKnee, leftAnkle) +
-                    calculateDistance(leftAnkle, leftFoot)) + (calculateDistance(rightHip, rightKnee) +
-                    calculateDistance(rightKnee, rightAnkle) + calculateDistance(rightAnkle, rightFoot))) / 2;
-                var totalHeight = (topHeight + legHeight).toFixed(2);
-
-                document.getElementById("height").innerHTML = "Height: " + totalHeight + "m";
-                document.getElementById("width").innerHTML = "Width: " + width + "m";
-                drawDotFigure(bodyFrame);
-            }
-        }
-
-        function calculateDistance(joint1, joint2) {
-            var distance = Math.sqrt(Math.pow(joint1.cameraX - joint2.cameraX, 2) +
-                Math.pow(joint1.cameraY - joint2.cameraY, 2) +
-                Math.pow(joint1.cameraZ - joint2.cameraZ, 2))
-            return distance;
-        }
-
-        function drawDotFigure(bodyFrame) {
+        function drawDotFigure(currentFrame) {
+            var bodyFrame = currentFrame;
             var c = document.getElementById('canvas');
             var ctx = c.getContext('2d');
-
             ctx.clearRect(0, 0, c.width, c.height);
-
             for (var i = 0; i < bodyFrame.bodies.length; i++) {
                 if (bodyFrame.bodies[i].tracked == true) {
                     for (var j = 0; j < bodyFrame.bodies[i].joints.length; j++) {
                         var joint = bodyFrame.bodies[i].joints[j];
-                        ctx.fillStyle = "#FF0000";
+                        ctx.fillStyle = "grey";
                         ctx.beginPath();
                         ctx.arc(joint.depthX * 512, joint.depthY * 424, 5, 0, Math.PI * 2, true); //multiplied with static integer 400 in order to adjust position on canvas as without it skeleton projection formed is only visible in a corner as DepthX values were always less than 1
                         ctx.closePath();
@@ -151,17 +55,31 @@
     </script>
 </head>
 
-<body onload="init()">
-    <h1 id="height" style="font-size: 72px"></h1>
-    <br>
-    <h1 id="width" style="font-size: 72px"></h1>
-    <br>
-    <h1 id="depth" style="font-size: 72px"></h1>
-    <br>
-    <canvas id="canvas" width="512" height="424"></canvas>
-    <br>
-    <br>
-    <!-- <a class="btn btn-primary" href="#" role="button">Gimmie</a> -->
+<!-- <body onload="init()"> -->
+<body>
+    <div class="container" style="margin-top: 50px;">
+        <div class="jumbotron">
+                <h1 class="display-4">Body Capture Title stuff</h1>
+                <p class="lead">Main info here</p>
+                <hr class="my-4">
+                <p>More here</p>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-primary" onclick="openReader()">Open data stream</button>
+                    <button class="btn btn-outline-danger" onclick="closeReader()">Close data stream</button>
+                    <button class="btn btn-outline-success"  onclick="capture()">Capture data</button>        
+                </div>   
+                <div class="alert alert-info" role="alert" style="margin-top: 15px;">
+                    <p class="lead">Data output:</p>
+                    <p id="height"></p>
+                    <p id="width"></p>
+                </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <canvas id="canvas" width="512" height="424"></canvas>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
