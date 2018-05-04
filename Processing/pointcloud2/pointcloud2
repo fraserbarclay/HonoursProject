@@ -23,8 +23,9 @@ void draw() {
 
   // Translate and rotate
   pushMatrix();
-  translate(width/2, height/2, -2250);
+  translate(width/2, height/2, 1000);
   //rotateY(a);
+  rotateY(3.2);
 
   //obtain the raw depth data in integers from [0 - 4500]
   int [] rawData = kinect.getRawDepthData();

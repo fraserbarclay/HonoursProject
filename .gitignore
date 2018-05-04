@@ -1,6 +1,4 @@
 node_modules/
 Old/
 
-.vs
 package-lock.json
-package.json

@@ -14,10 +14,6 @@
         socket.on('output', output)
 
         function openReader() {
-            var message = {
-                user: "nodesource",
-                text: "Hello, world!"
-            };
             socket.emit("open");
         }
 
@@ -25,12 +21,13 @@
             socket.emit("close");
         }
 
-        function capture(){
+        function capture() {
             socket.emit("capture");
         }
 
-        function output(output){
+        function output(output) {
             document.getElementById("height").innerHTML = "Height: " + output.height + "m";
+            console.log(output.width);
             document.getElementById("width").innerHTML = "Width: " + output.width + "m";
         }
 
@@ -56,23 +53,27 @@
 </head>
 
 <!-- <body onload="init()"> -->
+
 <body>
     <div class="container" style="margin-top: 50px;">
         <div class="jumbotron">
-                <h1 class="display-4">Body Capture Title stuff</h1>
-                <p class="lead">Main info here</p>
-                <hr class="my-4">
-                <p>More here</p>
-                <div class="btn-group" role="group">
-                    <button class="btn btn-outline-primary" onclick="openReader()">Open data stream</button>
-                    <button class="btn btn-outline-danger" onclick="closeReader()">Close data stream</button>
-                    <button class="btn btn-outline-success"  onclick="capture()">Capture data</button>        
-                </div>   
-                <div class="alert alert-info" role="alert" style="margin-top: 15px;">
-                    <p class="lead">Data output:</p>
-                    <p id="height"></p>
-                    <p id="width"></p>
-                </div>
+            <h1 class="display-4">Body Dimension Analysis </h1>
+            <p class="lead">Application to capture skeleton data from the Kinect device and calculate body dimensions from the displayed
+                skeleton.</p>
+            <hr class="my-4">
+            <p>To open the data stream click 'Open Data Stream'. Once the stream is open you should see a body skelton displayed
+                below this box. You can the capture data using the 'Capture Data' button and it will print dimensions to
+                the screen. You can then close the stream by clicking 'Close Data Stream'.</p>
+            <div class="btn-group" role="group">
+                <button class="btn btn-outline-primary" onclick="openReader()">Open Data Stream</button>
+                <button class="btn btn-outline-danger" onclick="closeReader()">Close Data Stream</button>
+                <button class="btn btn-outline-success" onclick="capture()">Capture Data</button>
+            </div>
+            <div class="alert alert-info" role="alert" style="margin-top: 15px;">
+                <p class="lead">Data output:</p>
+                <p id="height"></p>
+                <p id="width"></p>
+            </div>
         </div>
         <div class="row">
             <div class="col-xs-12">
